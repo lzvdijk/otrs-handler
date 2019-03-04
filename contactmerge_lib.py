@@ -90,7 +90,7 @@ def init_connection():
 
 def update_ticket_queue(client, ticket_id, queue):
     """
-    Update a ticket's queue id. Expects a single integer as input
+    Update a ticket's queue id. Usually this id should be a single integer
     """
     if verbose:
         structlog.get_logger(log).info("Updating queue of ticket " + str(ticket_id) + " with '" + str(queue) + "'!")
@@ -114,7 +114,7 @@ def update_ticket_ip(client, ticket_id, ip):
 
 def close_ticket(client, ticket_id):
     """
-    Update a ticket's state to 'Open'.
+    Update a ticket's state to 'Closed Succesful'.
     """
     if verbose:
         structlog.get_logger(log).info("Closing ticket " + str(ticket_id))
