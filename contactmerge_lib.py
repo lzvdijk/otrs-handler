@@ -217,7 +217,7 @@ def primary_search(client, ip):
     """
     try:
         #tickets = client.tc.TicketSearch(QueueIDs=[46], Title="%Contactformulier KPN voor het IP adres "+"["+ip+"]%")
-        tickets = client.tc.TicketSearch(Title="%Contactformulier KPN voor het IP testadres "+"["+str(ip)+"]%")
+        tickets = client.tc.TicketSearch(Title="%Contactformulier KPN voor het IP adres "+"["+str(ip)+"]%")
     except Exception as e:
         structlog.get_logger(log).error("Exception in primary search request: "+e)
 
@@ -230,7 +230,7 @@ def secondary_search(client, ip):
     """
     try:
         #tickets = client.tc.TicketSearch(QueueIDs=[9, 16, 46], Title="Misbruik van uw internetaansluiting "+"["+ip+"]")
-        tickets = client.tc.TicketSearch(Title="%Misbruik van uw testinternetaansluiting "+"["+ip+"]%")
+        tickets = client.tc.TicketSearch(Title="%Misbruik van uw internetaansluiting "+"["+ip+"]%")
     except Exception as e:
         structlog.get_logger(log).error("Exception in secondary search request: "+e)
 
