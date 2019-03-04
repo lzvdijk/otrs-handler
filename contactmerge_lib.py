@@ -208,9 +208,8 @@ def merge_tickets(client, ticket1_id, ticket2_id):
     for art in ticket1_articles:
         t_upd = ticket1_articles[ticket1_articles.index(art)]
         client.tc.TicketUpdate(ticket2_id, article=t_upd)
-    # add information from free fields to ticket2
-
-    # remove ticket1 (?)
+    
+    # any information in free fields we want to add?
 
 def primary_search(client, ip):
     """
