@@ -21,6 +21,9 @@ import re
 import ssl # this is only required for situations where ssl verification is broken
 import structlog
 
+# immediately initialise an error log
+log = structlog.get_logger(__name__)
+
 # access ticket elements as follows:
 # testticket.find('Title').text
 # or testticket.to_xml().find('Title').text
@@ -29,13 +32,13 @@ import structlog
 from argparse import ArgumentParser
 
 # ticket handling libs from python-otrs
-from otrs.ticket.template import GenericTicketConnectorSOAP
-from otrs.client import GenericInterfaceClient
-from otrs.ticket.objects import Ticket, Article, DynamicField, Attachment 
-
-# using structlog for basic error logging
-
-log = structlog.get_logger(__name__)
+try:
+    from otrs.ticket.template import GenericTicketConnectorSOAP
+    from otrs.client import GenericInterfaceClient
+    from otrs.ticket.objects import Ticket, Article, DynamicField, Attachment 
+except ImportError as e:
+    structlog.get_logger(log).error("Import error, please run pip install python-otrs: "+e)
+    raise e
 
 PARSER = ArgumentParser()
 
@@ -71,7 +74,6 @@ otrs_url = args.otrs_url
 otrs_soap_service = args.otrs_soap_service
 verbose = args.verbose
 
-
 def init_connection():
     """
     Returns a connected and authenticated OTRS client
@@ -90,7 +92,7 @@ def init_connection():
 
 def update_ticket_queue(client, ticket_id, queue):
     """
-    Update a ticket's queue id. Usually this id should be a single integer
+    Update a ticket's queue id. Usually thisi d should be a single integer
     """
     if verbose:
         structlog.get_logger(log).info("Updating queue of ticket " + str(ticket_id) + " with '" + str(queue) + "'!")
@@ -155,7 +157,6 @@ def get_ticket_title_ip(client, ticketid):
     Get the ip address from a ticket's title, based on ticket id.
     Grabs ip addresses from forms like "Contactformulier KPN voor het IP testadres [ip]"
     """
-
     if ticketid:
         try:
             ticket = get_ticket(client, ticketid).to_xml()
