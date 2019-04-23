@@ -35,7 +35,7 @@ from argparse import ArgumentParser
 try:
     from otrs.ticket.template import GenericTicketConnectorSOAP
     from otrs.client import GenericInterfaceClient
-    from otrs.ticket.objects import Ticket, Article, DynamicField, Attachment 
+    from otrs.ticket.objects import Ticket, Article, DynamicField, Attachment
 except ImportError as e:
     structlog.get_logger(log).error("Import error, please run pip install python-otrs: "+e)
     raise e
@@ -100,7 +100,7 @@ def update_ticket_queue(client, ticket_id, queue):
         t_upd = Ticket(QueueIDs=[queue])
         client.tc.TicketUpdate(ticket_id, ticket=t_upd)
     except Exception as e:
-        structlog.get_logger(log).error("Exception during queue update: "+e)    
+        structlog.get_logger(log).error("Exception during queue update: "+e)
 
 def update_ticket_ip(client, ticket_id, ip):
     """
@@ -121,10 +121,10 @@ def close_ticket(client, ticket_id):
     if verbose:
         structlog.get_logger(log).info("Closing ticket " + str(ticket_id))
     try:
-        t_upd = Ticket(State='Closed Successful')
+        t_upd = Ticket(State='resolved')
         client.tc.TicketUpdate(ticket_id, ticket=t_upd)
     except Exception as e:
-        structlog.get_logger(log).error("Exception during ticket state update: "+e)        
+        structlog.get_logger(log).error("Exception during ticket state update: "+e)
 
 def open_ticket(client, ticket_id):
     """
@@ -160,7 +160,7 @@ def get_ticket_title_ip(client, ticketid):
     if ticketid:
         try:
             ticket = get_ticket(client, ticketid).to_xml()
-            extract = re.search(r'\[(.*?)\]', ticket.find('Title').text)
+            extract = re.search(r'(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3})', ticket.find('Title').text)
             if extract:
                 ip = extract.group(1)
                 if verbose:
@@ -203,21 +203,21 @@ def merge_tickets(client, ticket1_id, ticket2_id):
     if verbose:
         structlog.get_logger(log).debug("Title of merged ticket " + str(ticket1_id) + ": " + ticket1.to_xml().find('Title').text)
         structlog.get_logger(log).debug("Title of merged ticket " + str(ticket2_id) + ": " + ticket2.to_xml().find('Title').text)
-    
+
     # add articles from ticket1 to ticket2
     ticket1_articles = ticket1.articles()
     for art in ticket1_articles:
         t_upd = ticket1_articles[ticket1_articles.index(art)]
         client.tc.TicketUpdate(ticket2_id, article=t_upd)
-    
+
     # any information in free fields we want to add?
 
 def primary_search(client, ip):
     """
-    Search OTRS for any tickets in queue 46 with a certain subject
+    Search OTRS for any tickets in queue 25 with a certain subject
     """
     try:
-        tickets = client.tc.TicketSearch(QueueIDs=[46], Title="%Contactformulier KPN voor het IP adres "+"["+str(ip)+"]%")
+        tickets = client.tc.TicketSearch(QueueIDs=[25], Title="%Contactformulier KPN voor het IP adres "+str(ip)+"%")
     except Exception as e:
         structlog.get_logger(log).error("Exception in primary search request: "+e)
 
@@ -226,10 +226,10 @@ def primary_search(client, ip):
 
 def secondary_search(client, ip):
     """
-    Search OTRS for any tickets in queues 9, 16 and 46 with a certain subject
+    Search OTRS for any tickets in queues 22, 23 and 25 with a certain subject
     """
     try:
-        tickets = client.tc.TicketSearch(QueueIDs=[9, 16, 46], Title="%Misbruik van uw internetaansluiting "+"["+str(ip)+"]%")
+        tickets = client.tc.TicketSearch(QueueIDs=[22, 23, 25], Title="%Misbruik van uw internetverbinding "+"["+str(ip)+"]%")
     except Exception as e:
         structlog.get_logger(log).error("Exception in secondary search request: "+e)
 
@@ -258,10 +258,10 @@ def handle_results(client, primary_tickets, secondary_tickets, ip):
                 open_ticket(client, secondary_tickets[0])
         else:
             # new case, create a new dossier
-            ticket_title = "Misbruik van uw testinternetaansluiting "+"["+ip+"]"
+            ticket_title = "Misbruik van uw internetverbinding "+"["+ip+"]"
             update_ticket_title(client, primary_tickets[0], ticket_title)
-            update_ticket_ip(client, primary_tickets[0], ip)
-            update_ticket_queue(client, primary_tickets[0], 9)
+            #update_ticket_ip(client, primary_tickets[0], ip)
+            update_ticket_queue(client, primary_tickets[0], 25)
             open_ticket(client, primary_tickets[0])
 
     else:
